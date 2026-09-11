@@ -25,7 +25,14 @@ import type { FilePayload, Period, Reading, Settings } from '../types';
 const FMT_KWH = '#,##0.0';
 const FMT_CHF = '#,##0.00';
 const FMT_DATE = 'DD.MM.YYYY';
-const FMT_PRICE = '0.00';
+/**
+ * Four decimals, not two. When the tariff changes inside a settlement period
+ * the price on this sheet is a weighted average, and a value rounded to two
+ * decimals no longer reconciles: 333.0 kWh at a displayed 0.29 comes to 96.57,
+ * while the sheet asks for 96.93. Handing the landlord a document that does not
+ * multiply out is how a dispute starts.
+ */
+const FMT_PRICE = '0.0000';
 
 /** The export is always written in German - see the module comment. */
 const EXPORT_LOCALE = 'de-CH';

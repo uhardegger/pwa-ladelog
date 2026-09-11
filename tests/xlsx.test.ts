@@ -263,6 +263,23 @@ describe('sheet 3 - Abrechnungsblatt (FR-6.2)', () => {
     expect(cell(ws, 'C11')?.v).toBe(0.28);
   });
 
+  it('shows the price with enough decimals to reconcile with the total', () => {
+    // A price rounded to two decimals stops multiplying out as soon as the
+    // tariff changes mid-period, which is exactly when it is questioned.
+    expect(cell(ws, 'C11')?.z).toBe('0.0000');
+  });
+
+  it('price times energy equals the amount, even across a tariff change', () => {
+    const span = { from: '2026-01-01', to: '2027-12-31' };
+    const sheet = buildWorkbook(readings, settings, span).Sheets[SHEET_STATEMENT]!;
+    const kwh = cell(sheet, 'C10')?.v as number;
+    const price = cell(sheet, 'C11')?.v as number;
+    const amount = cell(sheet, 'C12')?.v as number;
+    // Rounded to the four decimals the sheet displays.
+    const displayed = Math.round(price * 10000) / 10000;
+    expect(Math.abs(kwh * displayed - amount)).toBeLessThan(0.01);
+  });
+
   it('reports the weighted price when the tariff changed mid-period', () => {
     const sheet = buildWorkbook(readings, settings, {
       from: '2026-01-01',
