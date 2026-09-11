@@ -45,12 +45,11 @@ jobs:
       - name: Build
         run: npm run build
 
-      # enablement turns Pages on the first time this runs, using the
-      # pages: write permission granted above. Without it the step fails on a
-      # repository where Pages has never been switched on by hand.
+      # Requires Pages to be switched on once by hand:
+      #   Settings -> Pages -> Build and deployment -> Source: GitHub Actions
+      # The workflow token cannot create the Pages site itself; enabling it
+      # from here was tried and still failed at this step.
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:

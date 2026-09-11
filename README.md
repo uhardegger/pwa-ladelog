@@ -45,6 +45,23 @@ stored choice, otherwise from the browser preference, otherwise German.
 The Excel export is **always German**: its recipient is the landlord, not the
 app's user.
 
+## Deployment
+
+Pushing to `main` builds, typechecks, tests and publishes to GitHub Pages via
+`.github/workflows/deploy.yml`.
+
+This needs two repository settings, both one-time:
+
+1. **Settings -> Pages -> Build and deployment -> Source: GitHub Actions.**
+   Without it the `configure-pages` step fails; the workflow token cannot
+   create the Pages site itself.
+2. **Settings -> Actions -> General -> Workflow permissions:** "Read and write
+   permissions", so the `pages: write` and `id-token: write` the workflow
+   requests are actually granted.
+
+HTTPS is not optional here: a service worker only registers over it, so
+without Pages there is no offline start (FR-3.3).
+
 ## Dependency note: SheetJS
 
 `xlsx@0.18.5` is the last release SheetJS published to npm and carries open
