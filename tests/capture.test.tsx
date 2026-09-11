@@ -255,6 +255,15 @@ describe('plausibility in the form (FR-2)', () => {
     expect(await screen.findByLabelText('Datum')).toHaveAttribute('max', todayIso());
   });
 
+  it('refuses a meter value with a space in it rather than guessing', async () => {
+    harness = await renderWithApp(<App />, { readings: existing });
+    const { user } = harness;
+    // "2 10" could be 210 or 2.10. The form must not pick one silently.
+    await user.type(await screen.findByLabelText(/Zählerstand/), '2 10');
+    expect(await screen.findByText(/Zählerstand eingeben/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Speichern' })).toBeDisabled();
+  });
+
   it('shows no warning before anything has been typed', async () => {
     harness = await renderWithApp(<App />, { readings: existing });
     await screen.findByLabelText(/Zählerstand/);

@@ -206,9 +206,15 @@ export function periodTotal(
 /**
  * Reads "42,5" the same as "42.5" (FR-1.1, AC-5). Returns null when there is no
  * usable number; the UI decides what to say about it.
+ *
+ * Whitespace is trimmed from the ends only. Whitespace *inside* the number
+ * makes it unreadable rather than being stripped: "2 10" could plausibly mean
+ * 210 or 2.10, and a meter reading that is silently wrong is worse than one the
+ * app refuses. Rejecting it costs a retype in the garage; accepting the wrong
+ * reading corrupts every consumption figure derived from it afterwards.
  */
 export function parseKwhInput(raw: string): number | null {
-  const cleaned = raw.trim().replace(/\s/g, '').replace(',', '.');
+  const cleaned = raw.trim().replace(',', '.');
   if (cleaned === '' || !/^\d*\.?\d*$/.test(cleaned)) return null;
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : null;

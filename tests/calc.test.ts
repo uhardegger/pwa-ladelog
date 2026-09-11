@@ -363,9 +363,26 @@ describe('parseKwhInput (FR-1.1, AC-5)', () => {
     expect(parseKwhInput('42.5')).toBe(42.5);
   });
 
-  it('ignores surrounding and inner whitespace', () => {
+  it('trims whitespace around the number', () => {
     expect(parseKwhInput(' 210 ')).toBe(210);
-    expect(parseKwhInput('2 10')).toBe(210);
+    expect(parseKwhInput('\t42.5\n')).toBe(42.5);
+  });
+
+  it('rejects whitespace inside the number rather than guessing', () => {
+    // "2 10" could be 210 or 2.10. Refusing costs a retype; guessing wrong
+    // corrupts every consumption figure derived from this reading afterwards.
+    expect(parseKwhInput('2 10')).toBeNull();
+    expect(parseKwhInput('42 .5')).toBeNull();
+    expect(parseKwhInput('42. 5')).toBeNull();
+  });
+
+  it('rejects a non-breaking space inside the number', () => {
+    // A paste from another app can carry one, and it looks just like a space.
+    expect(parseKwhInput('2\u00A010')).toBeNull();
+  });
+
+  it('still trims a non-breaking space at the ends', () => {
+    expect(parseKwhInput('\u00A0210\u00A0')).toBe(210);
   });
 
   it('rejects text', () => {
