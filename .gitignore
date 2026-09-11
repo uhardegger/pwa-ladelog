@@ -1,0 +1,14 @@
+node_modules/
+dist/
+dist-ssr/
+coverage/
+*.local
+
+# Specification sources contain personal data and stay out of the public repo.
+spec/
+
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log
