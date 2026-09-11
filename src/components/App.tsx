@@ -15,6 +15,7 @@ import { InstallHint } from './InstallHint';
 import { MonthlyOverview } from './MonthlyOverview';
 import { ReadingList } from './ReadingList';
 import { SettingsScreen } from './SettingsScreen';
+import { ShareApp } from './ShareApp';
 import { SetupScreen } from './SetupScreen';
 import { TabBar, type TabId } from './TabBar';
 
@@ -75,6 +76,7 @@ export function App() {
         {tab === 'list' && <ReadingList />}
         {tab === 'overview' && <MonthlyOverview />}
         {tab === 'export' && <ExportScreen />}
+        {tab === 'share' && <ShareApp />}
         {tab === 'settings' && <SettingsScreen />}
       </main>
 

@@ -130,6 +130,7 @@ export const de: Messages = {
   'tabs.list': 'Liste',
   'tabs.overview': 'Monate',
   'tabs.export': 'Export',
+  'tabs.share': 'Teilen',
   'tabs.settings': 'Einstellungen',
 
   'install.ios':

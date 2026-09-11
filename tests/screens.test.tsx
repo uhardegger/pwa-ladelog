@@ -399,20 +399,20 @@ describe('sharing the app itself', () => {
     // If both sharing and the clipboard fail there must still be something to
     // read out or copy by hand.
     harness = await renderWithApp(<App />, { readings });
-    await goTo(harness, 'Einstellungen');
+    await goTo(harness, 'Teilen');
     expect(await screen.findByText(window.location.origin + '/')).toBeInTheDocument();
   });
 
   it('offers the share sheet where the browser has one', async () => {
     stubNavigator('share', async () => {});
     harness = await renderWithApp(<App />, { readings });
-    await goTo(harness, 'Einstellungen');
+    await goTo(harness, 'Teilen');
     expect(await screen.findByRole('button', { name: 'Link teilen' })).toBeInTheDocument();
   });
 
   it('offers copying instead where it does not', async () => {
     harness = await renderWithApp(<App />, { readings });
-    await goTo(harness, 'Einstellungen');
+    await goTo(harness, 'Teilen');
     expect(await screen.findByRole('button', { name: 'Link kopieren' })).toBeInTheDocument();
   });
 
@@ -421,7 +421,7 @@ describe('sharing the app itself', () => {
     stubNavigator('share', share);
     harness = await renderWithApp(<App />, { readings });
     const { user } = harness;
-    await goTo(harness, 'Einstellungen');
+    await goTo(harness, 'Teilen');
 
     await user.click(await screen.findByRole('button', { name: 'Link teilen' }));
 
@@ -432,7 +432,7 @@ describe('sharing the app itself', () => {
   it('copies the address and confirms when there is no share sheet', async () => {
     harness = await renderWithApp(<App />, { readings });
     const { user } = harness;
-    await goTo(harness, 'Einstellungen');
+    await goTo(harness, 'Teilen');
 
     await user.click(await screen.findByRole('button', { name: 'Link kopieren' }));
 
@@ -445,7 +445,7 @@ describe('sharing the app itself', () => {
   it('says so rather than staying silent when it can do neither', async () => {
     harness = await renderWithApp(<App />, { readings });
     const { user } = harness;
-    await goTo(harness, 'Einstellungen');
+    await goTo(harness, 'Teilen');
     // Removed after the render, because user-event's setup() installs a
     // working clipboard that would otherwise mask this case.
     stubNavigator('clipboard', undefined);
@@ -460,7 +460,7 @@ describe('sharing the app itself', () => {
     stubNavigator('share', share);
     harness = await renderWithApp(<App />, { readings });
     const { user } = harness;
-    await goTo(harness, 'Einstellungen');
+    await goTo(harness, 'Teilen');
 
     await user.click(await screen.findByRole('button', { name: 'Link teilen' }));
 
@@ -595,6 +595,63 @@ describe('export and import (FR-6, FR-7, FR-8)', () => {
     expect(
       await screen.findByText('1 neu, 0 bereits vorhanden, 1 unlesbar und übersprungen.'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('the tab bar', () => {
+  const tabNames = ['Erfassen', 'Liste', 'Monate', 'Export', 'Teilen', 'Einstellungen'];
+
+  /** The visible words, without the decorative icon glyph beside them. */
+  const visibleLabels = (bar: HTMLElement) =>
+    within(bar)
+      .getAllByRole('button')
+      .map((b) => b.querySelector('.tab__label')?.textContent);
+
+  it('offers the six tabs in order', async () => {
+    harness = await renderWithApp(<App />, { readings });
+    const bar = await screen.findByRole('navigation');
+    expect(visibleLabels(bar)).toEqual(tabNames);
+  });
+
+  it('every tab reaches a screen', async () => {
+    harness = await renderWithApp(<App />, { readings });
+    const { user } = harness;
+    const bar = await screen.findByRole('navigation');
+    for (const name of tabNames) {
+      const tab = within(bar).getByRole('button', { name });
+      await user.click(tab);
+      expect(tab, name).toHaveAttribute('aria-current', 'page');
+    }
+  });
+
+  it('names each tab by the word printed on it, for voice control', async () => {
+    // A shortened visible label with a different aria-label would break
+    // "label in name": saying the word on screen would not select the tab.
+    harness = await renderWithApp(<App />, { readings });
+    const bar = await screen.findByRole('navigation');
+    for (const label of tabNames) {
+      expect(within(bar).getByRole('button', { name: label }), label).toBeInTheDocument();
+    }
+  });
+
+  it('translates the tabs', async () => {
+    harness = await renderWithApp(<App />, { readings, settings: { language: 'en' } });
+    const bar = await screen.findByRole('navigation');
+    expect(visibleLabels(bar)).toEqual([
+      'Log',
+      'Readings',
+      'Months',
+      'Export',
+      'Share',
+      'Settings',
+    ]);
+  });
+
+  it('keeps the share action out of the settings screen', async () => {
+    harness = await renderWithApp(<App />, { readings });
+    await goTo(harness, 'Einstellungen');
+    await screen.findByLabelText('Mieter');
+    expect(screen.queryByRole('button', { name: /Link (teilen|kopieren)/ })).toBeNull();
   });
 });
 

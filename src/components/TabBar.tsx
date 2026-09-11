@@ -4,17 +4,29 @@
  * At the bottom because the app is used one-handed in portrait (NFR-3), and
  * because the capture form must own the top of the screen. Each tab is 56 px
  * tall, above the 44 px minimum.
+ *
+ * Six tabs is the practical limit at this width: on a 375 px screen each gets
+ * about 62 px, so the labels are small and allowed to ellipsise rather than
+ * wrap or overflow. The visible text is the accessible name - no aria-label
+ * shortcut - so voice control can address a tab by the word that is on it.
  */
 import type { MessageKey } from '../i18n';
 import { useLadelog } from '../app/context';
 
-export type TabId = 'capture' | 'list' | 'overview' | 'export' | 'settings';
+export type TabId = 'capture' | 'list' | 'overview' | 'export' | 'share' | 'settings';
 
+/**
+ * Plain glyphs rather than emoji: they inherit the text colour, so the active
+ * tab actually looks active, and they render identically on both platforms.
+ * Export points down (data leaving as a file), share points outward (the
+ * address leaving for someone else).
+ */
 const TABS: Array<{ id: TabId; label: MessageKey; icon: string }> = [
   { id: 'capture', label: 'tabs.capture', icon: '⊕' },
   { id: 'list', label: 'tabs.list', icon: '≡' },
   { id: 'overview', label: 'tabs.overview', icon: '▦' },
-  { id: 'export', label: 'tabs.export', icon: '↗' },
+  { id: 'export', label: 'tabs.export', icon: '↓' },
+  { id: 'share', label: 'tabs.share', icon: '↗' },
   { id: 'settings', label: 'tabs.settings', icon: '⚙' },
 ];
 
@@ -38,7 +50,7 @@ export function TabBar({ active, onSelect }: Props) {
           <span className="tab__icon" aria-hidden="true">
             {tab.icon}
           </span>
-          {t(tab.label)}
+          <span className="tab__label">{t(tab.label)}</span>
         </button>
       ))}
     </nav>

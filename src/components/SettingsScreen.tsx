@@ -17,7 +17,6 @@ import { missingStatementFields, parsePriceInput } from '../db/settings';
 import { LANGUAGES, type Language } from '../types';
 import type { MessageKey } from '../i18n';
 import { Field } from './Field';
-import { ShareApp } from './ShareApp';
 
 const LANGUAGE_LABELS: Record<Language, MessageKey> = {
   de: 'language.de',
@@ -185,8 +184,6 @@ export function SettingsScreen() {
           </p>
         )}
       </div>
-
-      <ShareApp />
 
       <p className="muted">
         {t('storage.state')}: {t(`storage.${persistence}` as MessageKey)}

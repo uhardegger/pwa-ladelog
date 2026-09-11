@@ -390,18 +390,31 @@ tfoot td {
 
 .tab {
   flex: 1;
+  /* Lets a tab shrink below its label's width so six of them stay equal. */
+  min-width: 0;
   min-height: 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
+  padding: 6px 2px;
   background: none;
   border: none;
   border-radius: 0;
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-size: 0.625rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.tab__label {
+  max-width: 100%;
+  /* Ellipsis rather than wrapping: a two-line label would push the bar taller
+     on the narrowest phones and unbalance the row. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tab[aria-current='page'] {

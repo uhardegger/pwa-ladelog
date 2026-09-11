@@ -126,6 +126,7 @@ export const en = {
   'tabs.list': 'Readings',
   'tabs.overview': 'Months',
   'tabs.export': 'Export',
+  'tabs.share': 'Share',
   'tabs.settings': 'Settings',
 
   'install.ios':

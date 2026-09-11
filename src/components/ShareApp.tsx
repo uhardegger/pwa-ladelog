@@ -27,9 +27,9 @@ export function ShareApp() {
   }
 
   return (
-    <section className="card">
-      <h3>{t('share.title')}</h3>
-      <p className="field__hint">{t('share.hint')}</p>
+    <>
+      <h2>{t('share.title')}</h2>
+      <p className="muted">{t('share.hint')}</p>
 
       {outcome && (
         <p
@@ -41,17 +41,17 @@ export function ShareApp() {
       )}
 
       {url ? (
-        <>
+        <section className="card">
           {/* Selectable, and wrapping rather than truncating: a link that is
               visibly cut off cannot be read out over the phone. */}
           <p className="share__url">{url}</p>
-          <button type="button" onClick={() => void onShare()}>
+          <button type="button" className="button--primary" onClick={() => void onShare()}>
             {canShareLink() ? t('share.button') : t('share.copy')}
           </button>
-        </>
+        </section>
       ) : (
         <p className="muted">{t('share.unavailable')}</p>
       )}
-    </section>
+    </>
   );
 }
