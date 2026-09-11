@@ -172,12 +172,23 @@ export function CaptureForm() {
           )}
         </Field>
 
-        {/* Prefilled from the settings and not editable here (FR-9.1): the
-            name belongs to the device, changing it per entry would be a way to
-            get it wrong without noticing. */}
-        <Field id="person" label={t('capture.person')}>
-          {(props) => <input {...props} type="text" value={settings.personName} readOnly />}
-        </Field>
+        {/*
+          Shown as plain text, not as a field (FR-9.1). The name is asked for
+          once at setup and changed in the settings; it belongs to the device,
+          not to the individual reading. A read-only input here only looked
+          editable and invited a mis-tap on the way to the save button.
+
+          aria-labelledby keeps the label associated, so assistive technology
+          still announces which person the reading will be attributed to.
+        */}
+        <div className="field">
+          <span className="field__label" id="person-label">
+            {t('capture.person')}
+          </span>
+          <p className="capture__person" aria-labelledby="person-label">
+            {settings.personName}
+          </p>
+        </div>
       </div>
 
       <Field id="note" label={t('capture.note')}>

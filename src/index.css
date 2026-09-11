@@ -282,6 +282,18 @@ button:disabled {
   gap: var(--gap);
 }
 
+/* Matches the height and rhythm of the date input beside it, without the
+   border and background that would make it look editable. */
+.capture__person {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap);
+  margin: 0;
+  padding: 10px 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
 .capture__meta > * {
   flex: 1;
 }

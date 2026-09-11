@@ -51,6 +51,31 @@ describe('first start (FR-9, PRD OP-2)', () => {
     expect(await screen.findByLabelText(/Zählerstand/)).toBeInTheDocument();
   });
 
+  it('offers the name editable on that first run', async () => {
+    harness = await renderWithApp(<App />, { settings: { personName: '' } });
+    const { user } = harness;
+    const field = await screen.findByLabelText('Eigener Name');
+    expect(field).toBeEnabled();
+    expect(field).not.toHaveAttribute('readonly');
+    await user.type(field, 'Hardegger');
+    expect(field).toHaveValue('Hardegger');
+  });
+
+  it('stamps new readings with the name from setup', async () => {
+    harness = await renderWithApp(<App />, { settings: { personName: '' } });
+    const { user, repository } = harness;
+    await user.type(await screen.findByLabelText('Eigener Name'), 'Partnerin');
+    await user.click(screen.getByRole('button', { name: 'Erfassung starten' }));
+
+    await user.type(await screen.findByLabelText(/Zählerstand/), '100');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+    // The very first reading is the opening one, so it confirms differently.
+    await screen.findByText('Als Anfangsablesung gespeichert.');
+
+    const stored = await repository.list();
+    expect(stored[0]?.person).toBe('Partnerin');
+  });
+
   it('does not ask again once the name is known', async () => {
     harness = await renderWithApp(<App />);
     expect(await screen.findByLabelText(/Zählerstand/)).toBeInTheDocument();
@@ -92,7 +117,25 @@ describe('the capture form is the app (FR-1)', () => {
   it('prefills date and person without any interaction (AC-4)', async () => {
     harness = await renderWithApp(<App />, { readings: existing });
     expect(await screen.findByLabelText('Datum')).toHaveValue(todayIso());
-    expect(screen.getByLabelText('Person')).toHaveValue('Hardegger');
+    expect(screen.getByLabelText('Person')).toHaveTextContent('Hardegger');
+  });
+
+  it('shows the person as text, not as a field to be edited here (FR-9.1)', async () => {
+    harness = await renderWithApp(<App />, { readings: existing });
+    await screen.findByLabelText(/Zählerstand/);
+    // The name is asked for once at setup and changed in the settings. Only
+    // the meter, the date and the note are editable while capturing.
+    const editable = screen.getAllByRole('textbox').map((el) => el.id);
+    expect(editable).toEqual(['meter', 'note']);
+    expect(screen.queryByRole('textbox', { name: 'Person' })).not.toBeInTheDocument();
+  });
+
+  it('follows the name currently set in the settings', async () => {
+    harness = await renderWithApp(<App />, {
+      readings: existing,
+      settings: { personName: 'Partnerin' },
+    });
+    expect(await screen.findByLabelText('Person')).toHaveTextContent('Partnerin');
   });
 
   it('shows the consumption live while typing (FR-1.3)', async () => {
