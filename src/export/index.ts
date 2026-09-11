@@ -25,3 +25,14 @@ export {
   type DeliveryMethod,
   type DeliveryResult,
 } from './deliver';
+
+export {
+  appShareUrl,
+  canShareLink,
+  currentAppUrl,
+  shareLink,
+  shareMessageKey,
+  type LinkPayload,
+  type ShareLinkResult,
+  type ShareMethod,
+} from './share';

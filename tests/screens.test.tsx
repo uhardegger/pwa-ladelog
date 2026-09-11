@@ -385,6 +385,92 @@ describe('settings (FR-9)', () => {
   });
 });
 
+describe('sharing the app itself', () => {
+  const stubNavigator = (key: 'share' | 'clipboard', value: unknown) => {
+    Object.defineProperty(navigator, key, { value, configurable: true, writable: true });
+  };
+
+  afterEach(() => {
+    stubNavigator('share', undefined);
+    stubNavigator('clipboard', undefined);
+  });
+
+  it('shows the address as selectable text, not only behind a button', async () => {
+    // If both sharing and the clipboard fail there must still be something to
+    // read out or copy by hand.
+    harness = await renderWithApp(<App />, { readings });
+    await goTo(harness, 'Einstellungen');
+    expect(await screen.findByText(window.location.origin + '/')).toBeInTheDocument();
+  });
+
+  it('offers the share sheet where the browser has one', async () => {
+    stubNavigator('share', async () => {});
+    harness = await renderWithApp(<App />, { readings });
+    await goTo(harness, 'Einstellungen');
+    expect(await screen.findByRole('button', { name: 'Link teilen' })).toBeInTheDocument();
+  });
+
+  it('offers copying instead where it does not', async () => {
+    harness = await renderWithApp(<App />, { readings });
+    await goTo(harness, 'Einstellungen');
+    expect(await screen.findByRole('button', { name: 'Link kopieren' })).toBeInTheDocument();
+  });
+
+  it('shares the address and confirms', async () => {
+    const share = vi.fn(async (_d: ShareData) => {});
+    stubNavigator('share', share);
+    harness = await renderWithApp(<App />, { readings });
+    const { user } = harness;
+    await goTo(harness, 'Einstellungen');
+
+    await user.click(await screen.findByRole('button', { name: 'Link teilen' }));
+
+    expect(await screen.findByText('Zum Teilen bereitgestellt.')).toBeInTheDocument();
+    expect(share.mock.calls[0]![0].url).toBe(window.location.origin + '/');
+  });
+
+  it('copies the address and confirms when there is no share sheet', async () => {
+    harness = await renderWithApp(<App />, { readings });
+    const { user } = harness;
+    await goTo(harness, 'Einstellungen');
+
+    await user.click(await screen.findByRole('button', { name: 'Link kopieren' }));
+
+    expect(await screen.findByText('Link kopiert.')).toBeInTheDocument();
+    // user-event installs its own clipboard, so read back from that rather
+    // than from a stub of our own, which it would have replaced.
+    expect(await navigator.clipboard.readText()).toBe(window.location.origin + '/');
+  });
+
+  it('says so rather than staying silent when it can do neither', async () => {
+    harness = await renderWithApp(<App />, { readings });
+    const { user } = harness;
+    await goTo(harness, 'Einstellungen');
+    // Removed after the render, because user-event's setup() installs a
+    // working clipboard that would otherwise mask this case.
+    stubNavigator('clipboard', undefined);
+
+    await user.click(await screen.findByRole('button', { name: 'Link kopieren' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Adresse oben/);
+  });
+
+  it('shares no reading data, only the address', async () => {
+    const share = vi.fn(async (_d: ShareData) => {});
+    stubNavigator('share', share);
+    harness = await renderWithApp(<App />, { readings });
+    const { user } = harness;
+    await goTo(harness, 'Einstellungen');
+
+    await user.click(await screen.findByRole('button', { name: 'Link teilen' }));
+
+    const shared = JSON.stringify(share.mock.calls[0]![0]);
+    expect(shared).not.toContain('Hardegger');
+    expect(shared).not.toContain('kWh');
+    expect(share.mock.calls[0]![0].files).toBeUndefined();
+  });
+});
+
 describe('export and import (FR-6, FR-7, FR-8)', () => {
   it('defaults the period to the current calendar year (FR-6.3)', async () => {
     harness = await renderWithApp(<App />, { readings });

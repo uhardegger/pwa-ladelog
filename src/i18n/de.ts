@@ -137,6 +137,19 @@ export const de: Messages = {
   'install.android': 'App installieren',
   'install.dismiss': 'Jetzt nicht',
 
+  'share.title': 'App teilen',
+  'share.hint': 'Die Adresse an jemanden senden, der seine Ladevorgänge selbst erfassen soll.',
+  'share.button': 'Link teilen',
+  'share.copy': 'Link kopieren',
+  'share.text': 'Ladelog – Zählerstand des Ladegeräts erfassen, funktioniert offline.',
+  'share.shared': 'Zum Teilen bereitgestellt.',
+  'share.copied': 'Link kopiert.',
+  'share.cancelled': 'Teilen abgebrochen.',
+  'share.unsupported':
+    'Dieser Browser kann weder teilen noch kopieren. Bitte die Adresse oben verwenden.',
+  'share.failed': 'Teilen fehlgeschlagen. Bitte die Adresse oben verwenden.',
+  'share.unavailable': 'Die Adresse ist nur verfügbar, wenn die App im Browser läuft.',
+
   'app.loading': 'Wird geladen…',
   'app.loadFailed':
     'Die Ablesungen konnten nicht geladen werden. Bitte noch nichts erfassen – zuerst die App neu starten.',

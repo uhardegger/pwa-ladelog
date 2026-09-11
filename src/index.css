@@ -438,6 +438,19 @@ tfoot td {
   padding: var(--gap);
 }
 
+.share__url {
+  margin: 0 0 var(--gap);
+  padding: 10px 12px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.95rem;
+  /* Wrap rather than truncate: a visibly cut-off address cannot be read out. */
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

@@ -133,6 +133,18 @@ export const en = {
   'install.android': 'Install app',
   'install.dismiss': 'Not now',
 
+  'share.title': 'Share the app',
+  'share.hint': 'Send the address to someone who should log their own charging.',
+  'share.button': 'Share link',
+  'share.copy': 'Copy link',
+  'share.text': 'Charging Log - log the charger meter reading, works offline.',
+  'share.shared': 'Ready to share.',
+  'share.copied': 'Link copied.',
+  'share.cancelled': 'Sharing cancelled.',
+  'share.unsupported': 'This browser cannot share or copy. Use the address shown above.',
+  'share.failed': 'Sharing failed. Use the address shown above.',
+  'share.unavailable': 'The address is only available when the app runs in a browser.',
+
   'app.loading': 'Loading…',
   'app.loadFailed':
     'Your readings could not be loaded. Do not add anything yet - restart the app first.',
