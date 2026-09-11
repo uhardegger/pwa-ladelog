@@ -18,7 +18,7 @@ const LANGUAGE_LABELS: Record<Language, MessageKey> = {
   en: 'language.en',
 };
 
-export function SetupScreen() {
+export function SetupScreen({ onDone }: { onDone(): void }) {
   const { settings, t, changeSettings } = useLadelog();
   const [name, setName] = useState(settings.personName);
   const [failed, setFailed] = useState(false);
@@ -40,7 +40,11 @@ export function SetupScreen() {
         onSubmit={(event) => {
           event.preventDefault();
           if (trimmed === '') return;
-          setFailed(!changeSettings({ personName: trimmed }));
+          const persisted = changeSettings({ personName: trimmed });
+          setFailed(!persisted);
+          // Move on even if the write was refused: the name is in memory, and
+          // blocking capture over a storage failure would lose the reading too.
+          onDone();
         }}
       >
         <Field id="setup-language" label={t('language.label')}>

@@ -278,6 +278,96 @@ describe('settings (FR-9)', () => {
     expect(JSON.parse(storage.getItem(SETTINGS_STORAGE_KEY)!).priceChfPerKwh).toBe(0.28);
   });
 
+  it('accepts a space in the settlement fields', async () => {
+    // normalizeSettings trims what it stores; an input bound straight to the
+    // stored value would lose the trailing space the instant it was typed, so
+    // a two-word tenant or vehicle could never be entered at all.
+    harness = await renderWithApp(<App />, { readings });
+    const { user, storage } = harness;
+    await goTo(harness, 'Einstellungen');
+
+    await user.type(await screen.findByLabelText('Mieter'), 'Urs Hardegger');
+    expect(screen.getByLabelText('Mieter')).toHaveValue('Urs Hardegger');
+
+    await waitFor(() => {
+      const stored = JSON.parse(storage.getItem(SETTINGS_STORAGE_KEY)!);
+      expect(stored.tenant).toBe('Urs Hardegger');
+    });
+  });
+
+  it('accepts spaces in the premises and vehicle fields too', async () => {
+    harness = await renderWithApp(<App />, { readings });
+    const { user, storage } = harness;
+    await goTo(harness, 'Einstellungen');
+
+    await user.type(await screen.findByLabelText('Objekt'), 'Garage - Ladeplatz EV');
+    await user.type(screen.getByLabelText('Fahrzeug'), 'Volvo EX30');
+
+    expect(screen.getByLabelText('Objekt')).toHaveValue('Garage - Ladeplatz EV');
+    expect(screen.getByLabelText('Fahrzeug')).toHaveValue('Volvo EX30');
+
+    await waitFor(() => {
+      const stored = JSON.parse(storage.getItem(SETTINGS_STORAGE_KEY)!);
+      expect(stored.premises).toBe('Garage - Ladeplatz EV');
+      expect(stored.vehicle).toBe('Volvo EX30');
+    });
+  });
+
+  it('accepts a space in the name field', async () => {
+    harness = await renderWithApp(<App />, { readings });
+    const { user, storage } = harness;
+    await goTo(harness, 'Einstellungen');
+
+    const field = await screen.findByLabelText('Eigener Name');
+    await user.clear(field);
+    await user.type(field, 'Urs Hardegger');
+
+    expect(field).toHaveValue('Urs Hardegger');
+    await waitFor(() => {
+      const stored = JSON.parse(storage.getItem(SETTINGS_STORAGE_KEY)!);
+      expect(stored.personName).toBe('Urs Hardegger');
+    });
+  });
+
+  it('clearing the name does not throw the user back to the setup screen', async () => {
+    // Otherwise a name could never be corrected by clearing and retyping it.
+    harness = await renderWithApp(<App />, { readings });
+    const { user } = harness;
+    await goTo(harness, 'Einstellungen');
+
+    await user.clear(await screen.findByLabelText('Eigener Name'));
+
+    expect(screen.queryByText('Willkommen')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Eigener Name')).toBeInTheDocument();
+  });
+
+  it('warns while the name is empty, since every reading is stamped with it', async () => {
+    harness = await renderWithApp(<App />, { readings });
+    const { user } = harness;
+    await goTo(harness, 'Einstellungen');
+
+    await user.clear(await screen.findByLabelText('Eigener Name'));
+    expect(await screen.findByText(/Name eingeben/)).toBeInTheDocument();
+  });
+
+  it('does not store the padding around a settlement field', async () => {
+    harness = await renderWithApp(<App />, { readings });
+    const { user, storage } = harness;
+    await goTo(harness, 'Einstellungen');
+
+    const field = await screen.findByLabelText('Fahrzeug');
+    await user.type(field, '  Volvo EX30  ');
+    await user.tab();
+
+    // What is typed stays visible while typing; what is stored is normalised,
+    // and leaving the field shows the stored form.
+    await waitFor(() => {
+      const stored = JSON.parse(storage.getItem(SETTINGS_STORAGE_KEY)!);
+      expect(stored.vehicle).toBe('Volvo EX30');
+    });
+    expect(screen.getByLabelText('Fahrzeug')).toHaveValue('Volvo EX30');
+  });
+
   it('names the settlement fields that are still missing (FR-6.2)', async () => {
     harness = await renderWithApp(<App />, { readings });
     await goTo(harness, 'Einstellungen');

@@ -3,6 +3,13 @@
  *
  * Every change is written immediately and confirmed on screen; a refused write
  * says so rather than looking saved (NFR-7).
+ *
+ * The text fields are edited through local draft state rather than bound
+ * straight to the stored settings. `normalizeSettings` trims what it stores, so
+ * an input reading its value back from storage would lose a trailing space the
+ * instant it was typed - making "Urs Hardegger" or "Volvo EX30" impossible to
+ * enter. The draft keeps what was typed, storage keeps the trimmed form, and
+ * leaving the field syncs the two.
  */
 import { useState } from 'react';
 import { useLadelog } from '../app/context';
@@ -16,13 +23,33 @@ const LANGUAGE_LABELS: Record<Language, MessageKey> = {
   en: 'language.en',
 };
 
+/** The settings that are free text, and therefore may contain spaces. */
+type TextSetting = 'personName' | 'tenant' | 'premises' | 'vehicle';
+
 export function SettingsScreen() {
   const { settings, t, changeSettings, persistence } = useLadelog();
   const [priceRaw, setPriceRaw] = useState(String(settings.priceChfPerKwh));
   const [message, setMessage] = useState<'saved' | 'failed' | null>(null);
+  const [draft, setDraft] = useState<Record<TextSetting, string>>(() => ({
+    personName: settings.personName,
+    tenant: settings.tenant,
+    premises: settings.premises,
+    vehicle: settings.vehicle,
+  }));
 
   function apply(patch: Parameters<typeof changeSettings>[0]) {
     setMessage(changeSettings(patch) ? 'saved' : 'failed');
+  }
+
+  /** Shows exactly what was typed while storing the normalised value. */
+  function editText(key: TextSetting, value: string) {
+    setDraft((current) => ({ ...current, [key]: value }));
+    apply({ [key]: value });
+  }
+
+  /** On leaving the field, show the value as it was actually stored. */
+  function settleText(key: TextSetting) {
+    setDraft((current) => ({ ...current, [key]: current[key].trim() }));
   }
 
   const priceValue = parsePriceInput(priceRaw);
@@ -69,12 +96,19 @@ export function SettingsScreen() {
             <input
               {...props}
               type="text"
-              value={settings.personName}
+              value={draft.personName}
               autoComplete="name"
-              onChange={(e) => apply({ personName: e.target.value })}
+              onChange={(e) => editText('personName', e.target.value)}
+              onBlur={() => settleText('personName')}
             />
           )}
         </Field>
+
+        {settings.personName.trim() === '' && (
+          <p className="notice notice--warning" role="status">
+            {t('settings.personName.required')}
+          </p>
+        )}
 
         <Field
           id="price"
@@ -111,8 +145,9 @@ export function SettingsScreen() {
             <input
               {...props}
               type="text"
-              value={settings.tenant}
-              onChange={(e) => apply({ tenant: e.target.value })}
+              value={draft.tenant}
+              onChange={(e) => editText('tenant', e.target.value)}
+              onBlur={() => settleText('tenant')}
             />
           )}
         </Field>
@@ -122,8 +157,9 @@ export function SettingsScreen() {
             <input
               {...props}
               type="text"
-              value={settings.premises}
-              onChange={(e) => apply({ premises: e.target.value })}
+              value={draft.premises}
+              onChange={(e) => editText('premises', e.target.value)}
+              onBlur={() => settleText('premises')}
             />
           )}
         </Field>
@@ -133,8 +169,9 @@ export function SettingsScreen() {
             <input
               {...props}
               type="text"
-              value={settings.vehicle}
-              onChange={(e) => apply({ vehicle: e.target.value })}
+              value={draft.vehicle}
+              onChange={(e) => editText('vehicle', e.target.value)}
+              onBlur={() => settleText('vehicle')}
             />
           )}
         </Field>

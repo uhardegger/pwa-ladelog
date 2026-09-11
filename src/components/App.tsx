@@ -22,8 +22,14 @@ export function App() {
   const { status, settings, persistence, t } = useLadelog();
   const [tab, setTab] = useState<TabId>('capture');
   const [storageWarningHidden, setStorageWarningHidden] = useState(false);
+  /**
+   * Decided once, at startup. If this tracked the name continuously, clearing
+   * the name field in the settings would throw the user back to the setup
+   * screen mid-edit, making it impossible to correct a name by retyping it.
+   */
+  const [setupDone, setSetupDone] = useState(() => !needsInitialSetup(settings));
 
-  if (needsInitialSetup(settings)) return <SetupScreen />;
+  if (!setupDone) return <SetupScreen onDone={() => setSetupDone(true)} />;
 
   if (status === 'loading') {
     return (
